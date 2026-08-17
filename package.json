@@ -1,0 +1,24 @@
+{
+  "type": "module",
+  "name": "just-kidding-bms",
+  "author": "manot40 <kevinsandiho290100@gmail.com>",
+  "license": "MIT",
+  "version": "0.0.0",
+  "scripts": {
+    "dev:web": "pnpm run -F {./apps/web} dev",
+    "dev:ios": "pnpm run -F {./apps/native} dev:ios",
+    "dev:android": "pnpm run -F {./apps/native} dev:android"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "11.22.0",
+      "onFail": "download"
+    }
+  },
+  "devDependencies": {
+    "oxfmt": "^0.63.0",
+    "oxlint": "^1.75.0",
+    "typescript": "~6.0.3"
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "type": "module",
+  "name": "@manot40/jk-bms",
+  "author": "manot40 <kevinsandiho290100@gmail.com>",
+  "license": "MIT",
+  "version": "0.0.0",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "development": "./src/index.ts",
+      "default": "./dist/index.mjs"
+    },
+    "./ble-native": {
+      "types": "./dist/ble-native.d.mts",
+      "development": "./src/ble-native.ts",
+      "default": "./dist/ble-native.mjs"
+    },
+    "./ble-web": {
+      "types": "./dist/ble-web.d.mts",
+      "development": "./src/ble-web.ts",
+      "default": "./dist/ble-web.mjs"
+    },
+    "./react": {
+      "types": "./dist/react.d.mts",
+      "development": "./src/react.ts",
+      "default": "./dist/react.mjs"
+    }
+  },
+  "scripts": {
+    "build": "tsdown",
+    "postinstall": "tsdown --dts"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@types/web-bluetooth": "^0.0.21",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "tsdown": "^0.22.14"
+  },
+  "peerDependencies": {
+    "react": "19.x",
+    "react-native-ble-plx": "^3.5.1"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-native-ble-plx": {
+      "optional": true
+    }
+  }
+}
