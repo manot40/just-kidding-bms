@@ -11,14 +11,14 @@
       "default": "./dist/index.mjs"
     },
     "./ble-native": {
-      "types": "./dist/ble-native.d.mts",
-      "development": "./src/ble-native.ts",
-      "default": "./dist/ble-native.mjs"
+      "types": "./dist/ble/native.d.mts",
+      "development": "./src/ble/native.ts",
+      "default": "./dist/ble/native.mjs"
     },
     "./ble-web": {
-      "types": "./dist/ble-web.d.mts",
-      "development": "./src/ble-web.ts",
-      "default": "./dist/ble-web.mjs"
+      "types": "./dist/ble/web.d.mts",
+      "development": "./src/ble/web.ts",
+      "default": "./dist/ble/web.mjs"
     },
     "./react": {
       "types": "./dist/react.d.mts",
@@ -34,7 +34,6 @@
     "buffer": "^6.0.3"
   },
   "devDependencies": {
-    "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@types/web-bluetooth": "^0.0.21",

@@ -1,4 +1,4 @@
-import type { BluetoothLE, Device } from '../bt/types';
+import type { BluetoothLE, Device } from '../ble/types';
 import type { BMSConfig, BMSListener, BMSStatus, ConnectionState, ConnectionStatus } from '../types';
 
 import { Buffer } from 'buffer';

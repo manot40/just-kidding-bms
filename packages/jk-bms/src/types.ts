@@ -1,4 +1,4 @@
-import type { BluetoothLE } from './bt/types';
+import type { BluetoothLE } from './ble/types';
 import type { DeviceProtocol } from './manager/const';
 
 export interface BatteryPackStatus {
@@ -90,10 +90,24 @@ export interface JK04Status {
 }
 
 export interface BMSConfig {
-  adapter: BluetoothLE;
-  protocol?: DeviceProtocol;
-  pollInterval?: number; // ms, default 2000
-  maxNoResponseCount?: number; // default 10
+  /** BluetoothLE adapter to use */
+  ble: BluetoothLE;
+  /**
+   * Device protocol hint for first-connect data parsing
+   * @default DeviceProtocol.JK02_24S
+   */
+  protocolHint?: DeviceProtocol;
+  /**
+   * Data polling interval, in milliseconds
+   * @default 2000
+   */
+  pollInterval?: number;
+  /**
+   * Max acceptable unresponsive response count
+   * before BLE connection completely dropped
+   * @default 10
+   */
+  maxNoResponseCount?: number;
 }
 
 export type ConnectionState = {
