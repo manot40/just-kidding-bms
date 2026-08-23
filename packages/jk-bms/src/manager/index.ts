@@ -42,7 +42,7 @@ export class BMSManager {
   constructor(private config: BMSConfig) {
     this.state = { isConnected: false, isConnecting: false, error: null };
     this.status = BMSManager.getInitialStatus();
-    this.adapter = config.adapter;
+    this.adapter = config.ble;
   }
 
   static getInitialStatus(): BMSStatus {
@@ -253,7 +253,7 @@ export class BMSManager {
   private decodeFrame(data: Buffer) {
     this.noResponseCount = 0;
 
-    const device = this.config.protocol ?? DeviceProtocol.JK02_24S;
+    const device = this.config.protocolHint ?? DeviceProtocol.JK02_24S;
     const frameType = getFrameType(data);
 
     switch (frameType) {

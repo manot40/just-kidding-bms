@@ -7,7 +7,8 @@
   "scripts": {
     "dev:web": "pnpm run -F {./apps/web} dev",
     "dev:ios": "pnpm run -F {./apps/native} dev:ios",
-    "dev:android": "pnpm run -F {./apps/native} dev:android"
+    "dev:android": "pnpm run -F {./apps/native} dev:android",
+    "build:web": "pnpm run -F {./apps/web} build"
   },
   "devEngines": {
     "packageManager": {

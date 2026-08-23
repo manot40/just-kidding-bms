@@ -1,6 +1,7 @@
 {
   "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
+    "types": ["web-bluetooth"],
     "rewriteRelativeImportExtensions": true,
     "allowJs": true,
     "checkJs": true,

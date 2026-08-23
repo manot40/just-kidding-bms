@@ -1,4 +1,4 @@
-import type { BMSStatus, CellDetail, DeviceStatus, JK04Status } from './types';
+import type { BMSStatus, CellDetail, DeviceStatus, JK04Status } from '../types';
 
 import { Buffer } from 'buffer';
 import { DeviceProtocol, ERRORS_JK02_TABLE, MIN_RESPONSE_SIZE } from './const';
