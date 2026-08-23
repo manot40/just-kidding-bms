@@ -1,0 +1,9 @@
+{
+  "$schema": "https://cdn.jsdelivr.net/npm/wrangler@4.31.0/config-schema.json",
+  "name": "jk",
+  "compatibility_date": "2025-08-15",
+  "assets": {
+    "directory": "./build",
+    "not_found_handling": "single-page-application"
+  }
+}
