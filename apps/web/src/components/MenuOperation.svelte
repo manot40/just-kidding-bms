@@ -1,7 +1,16 @@
 <script lang="ts">
   import Progress from '$components/ui/progress/progress.svelte';
 
-  import { BatteryIcon, BatteryCharging, BatteryFull, BatteryLow, BatteryMedium } from '@lucide/svelte';
+  import {
+    type LucideIcon,
+    BatteryIcon,
+    BatteryCharging,
+    BatteryFull,
+    BatteryLow,
+    BatteryMedium,
+    CpuIcon,
+    ThermometerIcon,
+  } from '@lucide/svelte';
 
   import * as bms from '$lib/bms.svelte';
 
@@ -34,9 +43,17 @@
       return 'text-muted-foreground';
     }
   }
+
+  function getTempColor(temp: number) {
+    let textColor: string | undefined;
+    if (temp > 45) textColor = 'text-red-600';
+    else if (temp > 35) textColor = 'text-yellow-600';
+    else if (temp < 30) textColor = 'text-green-600';
+    return textColor;
+  }
 </script>
 
-{#snippet MainBlock(mainValue: [string, string], secondValue: [string, string], cn?: string)}
+{#snippet Block(mainValue: [string, string], secondValue: [string, string], cn?: string)}
   <div class={['text-center', cn]}>
     <div class="p-2.5 text-3xl font-semibold border-b">
       {mainValue[0]}
@@ -46,6 +63,20 @@
       {secondValue[0]}
       <span class="text-xs -ml-px">{secondValue[1]}</span>
     </div>
+  </div>
+{/snippet}
+
+{#snippet Temp(temp: number | undefined, Icon: LucideIcon, extra?: string)}
+  <div class="flex items-center gap-1.5">
+    <div class="text-xs"><Icon class="size-4 inline" />{extra}</div>
+    {#if typeof temp == 'number'}
+      <div class={['font-semibold', extra && 'ml-px']}>
+        <span class={getTempColor(temp)}>{temp.toFixed(2)}</span>
+        <span>°C</span>
+      </div>
+    {:else}
+      <em>N/A</em>
+    {/if}
   </div>
 {/snippet}
 
@@ -64,13 +95,21 @@
   <Progress value={soc} color={Battery.color} />
 </section>
 
+<section id="temperatures" class="border-t p-2">
+  <div class="grid grid-cols-3 place-items-center text-sm">
+    {@render Temp(bms.status.temperatures.mosfet, CpuIcon)}
+    {@render Temp(bms.status.temperatures.sensor1, ThermometerIcon, '1')}
+    {@render Temp(bms.status.temperatures.sensor2, ThermometerIcon, '2')}
+  </div>
+</section>
+
 <section id="power" class="grid grid-cols-2 select-none border-y">
-  {@render MainBlock(
+  {@render Block(
     [packStats.totalVoltage.toFixed(2), 'V'],
     [cellStats.deltaCellVoltage.toFixed(3), 'ΔV'],
     'border-r'
   )}
-  {@render MainBlock([packStats.current.toFixed(2), 'A'], [packStats.power.toFixed(0), 'W'])}
+  {@render Block([packStats.current.toFixed(2), 'A'], [packStats.power.toFixed(0), 'W'])}
 </section>
 
 <section id="cells" class="grid grid-cols-4 select-none">
