@@ -1,6 +1,6 @@
 {
   "$schema": "https://cdn.jsdelivr.net/npm/wrangler@4.31.0/config-schema.json",
-  "name": "jk",
+  "name": "just-kidding-bms",
   "compatibility_date": "2025-08-15",
   "assets": {
     "directory": "./build",

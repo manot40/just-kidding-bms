@@ -1,5 +1,6 @@
 <script lang="ts">
   import { browser } from '$app/env';
+  import { onDestroy } from 'svelte';
 
   import Button from '$components/ui/button/button.svelte';
   import * as Empty from '$components/ui/empty/index.js';
@@ -9,9 +10,22 @@
   import { conn, manager } from '$lib/bms.svelte';
 
   const hasBluetooth = browser && typeof navigator.bluetooth != 'undefined';
+
+  let wakeLock: WakeLockSentinel | null = null;
+
+  function handleConnect() {
+    manager.connect();
+    navigator.wakeLock.request('screen').then((wl) => {
+      wakeLock = wl;
+    });
+  }
+
+  onDestroy(() => {
+    if (wakeLock) wakeLock.release().then(() => (wakeLock = null));
+  });
 </script>
 
-<div class="w-full lg:max-w-2xl mx-auto">
+<div class="w-full lg:max-w-lg mx-auto">
   {#if !conn.isConnected}
     <Empty.Root class="min-h-dvh">
       <Empty.Header>
@@ -30,7 +44,7 @@
         </Empty.Description>
       </Empty.Header>
       <Empty.Content>
-        <Button class="px-6" disabled={!hasBluetooth} onclick={() => manager.connect()}>Connect</Button>
+        <Button class="px-6" disabled={!hasBluetooth} onclick={handleConnect}>Connect</Button>
       </Empty.Content>
     </Empty.Root>
   {:else}

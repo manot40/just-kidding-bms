@@ -1,6 +1,8 @@
 <script lang="ts">
   import Progress from '$components/ui/progress/progress.svelte';
 
+  import { useDebounce } from '$lib/hooks/debounce.svelte';
+
   import {
     type LucideIcon,
     BatteryIcon,
@@ -14,12 +16,21 @@
 
   import * as bms from '$lib/bms.svelte';
 
+  const numFmt = Intl.NumberFormat('id').format;
+
   const devFlags = $derived(bms.status.devFlags);
   const packStats = $derived(bms.status.packStatus);
   const cellStats = $derived(bms.status.cellStatus);
-  const balanceState = $derived(
-    !devFlags.isBalancing ? 0 : bms.status.packStatus.balancingCurrent > 0 ? 1 : -1
-  );
+  const balanceState = $derived(!devFlags.isBalancing ? 0 : packStats.balancingCurrent > 0 ? 1 : -1);
+  const chargeStateDeb = useDebounce(() => devFlags.isCharging, 6e3);
+
+  const powerDrawStats = $derived.by(() => {
+    const fullCapDrain = -packStats.fullChargeCapacity;
+    if (packStats.current <= fullCapDrain * 2) return 'high';
+    else if (packStats.current <= fullCapDrain) return 'medium';
+    else return '';
+  });
+  const powerDrawState = $derived(packStats.power < 0 ? 'drain' : packStats.power > 0 ? 'charge' : '');
 
   const soc = $derived(packStats.stateOfCharge);
   const Battery = $derived.by(() => {
@@ -53,15 +64,15 @@
   }
 </script>
 
-{#snippet Block(mainValue: [string, string], secondValue: [string, string], cn?: string)}
-  <div class={['text-center', cn]}>
-    <div class="p-2.5 text-3xl font-semibold border-b">
-      {mainValue[0]}
-      <sup class="text-lg -ml-1">{mainValue[1]}</sup>
+{#snippet Block(mainValue: [string, string], secondValue: [string, string], cn?: string | string[])}
+  <div class={['text-center', ...(Array.isArray(cn) ? cn : [cn])]}>
+    <div class="top p-2.5 text-3xl font-semibold border-b border-dashed">
+      <span class="value">{mainValue[0]}</span>
+      <sup class="unit text-lg -ml-1">{mainValue[1]}</sup>
     </div>
-    <div class="p-1">
-      {secondValue[0]}
-      <span class="text-xs -ml-px">{secondValue[1]}</span>
+    <div class="bot p-1">
+      <span class="value font-medium">{secondValue[0]}</span>
+      <span class="unit text-xs -ml-px">{secondValue[1]}</span>
     </div>
   </div>
 {/snippet}
@@ -71,7 +82,7 @@
     <div class="text-xs"><Icon class="size-4 inline" />{extra}</div>
     {#if typeof temp == 'number'}
       <div class={['font-semibold', extra && 'ml-px']}>
-        <span class={getTempColor(temp)}>{temp.toFixed(2)}</span>
+        <span class={['transition-colors duration-300', getTempColor(temp)]}>{temp.toFixed(1)}</span>
         <span>°C</span>
       </div>
     {:else}
@@ -82,9 +93,9 @@
 
 <section id="soc" class="p-2 pb-2.5 select-none">
   <div class="flex justify-between mb-1.5 items-center">
-    <div class="flex gap-1 items-center text-xs">
+    <div class="flex gap-1.5 items-center text-xs">
       <Battery.Icon class="size-5" />
-      <p>{devFlags.isCharging ? 'Charging Battery' : 'Battery SoC'}</p>
+      <p class="font-medium">{cellStats.type} {chargeStateDeb.value ? '• Charging' : ''}</p>
     </div>
     <div class="flex items-center text-sm font-medium">
       <p>{packStats.capacityRemaining.toFixed(2)} Ah</p>
@@ -109,12 +120,16 @@
     [cellStats.deltaCellVoltage.toFixed(3), 'ΔV'],
     'border-r'
   )}
-  {@render Block([packStats.current.toFixed(2), 'A'], [packStats.power.toFixed(0), 'W'])}
+  {@render Block(
+    [packStats.current.toFixed(2), 'A'],
+    [numFmt(Math.round(packStats.power < 0 ? packStats.power * -1 : packStats.power)), 'W'],
+    ['power-draw transition-colors duration-300', powerDrawStats, powerDrawState]
+  )}
 </section>
 
 <section id="cells" class="grid grid-cols-4 select-none">
   {#each cellStats.cells as cell, i (i)}
-    <div class={[getCellColor(i), 'p-2  border-b']}>
+    <div class={['cell transition-colors duration-300', getCellColor(i)]}>
       <div class="text-xs">#{i + 1}</div>
 
       <div>
@@ -130,7 +145,32 @@
 </section>
 
 <style>
-  #cells > .border-b:not(:nth-child(4n)) {
-    @apply border-r;
+  .cell {
+    padding: calc(var(--spacing) * 2);
+    border-bottom: 1px dashed var(--color-muted);
+    &:not(:nth-child(4n)) {
+      border-right: 1px dashed var(--color-muted);
+    }
+    &:nth-last-child(-n + 4) {
+      border-bottom-style: solid;
+    }
+  }
+
+  .power-draw {
+    &.high > .top > .value {
+      color: var(--color-red-600);
+    }
+    &.medium > .top > .value {
+      color: var(--color-yellow-600);
+    }
+    &.drain > .bot > .value {
+      color: var(--color-red-600);
+    }
+    &.charge {
+      & > .bot > .value,
+      & > .top > .value {
+        color: var(--color-green-600);
+      }
+    }
   }
 </style>

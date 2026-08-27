@@ -211,8 +211,14 @@ export function decodeJK02CellInfo(data: Buffer, protocol: DeviceProtocol): Omit
   // Heating current at 204+offset2
   const heatingCurrent = getInt16bit(data, 204 + offset2) * 0.001;
 
+  const KNOWN_CELLS_TYPES = ['LFP', 'Li-ion', 'LTO'] as const;
+  // Battery type at 243+offset2
+  const cellsTypeId = data[243 + offset2];
+  const cellsType = KNOWN_CELLS_TYPES[cellsTypeId] || `Unknown (${cellsTypeId})`;
+
   const result: Omit<BMSStatus, 'devStatus'> = {
     cellStatus: {
+      type: cellsType,
       cells: cellData,
       minCellVoltage,
       maxCellVoltage,
@@ -265,10 +271,6 @@ export function decodeJK02CellInfo(data: Buffer, protocol: DeviceProtocol): Omit
       sensor4: getInt16bit(data, 224 + offset2) * 0.1,
       sensor5: getInt16bit(data, 226 + offset2) * 0.1,
     };
-
-    const batteryTypeId = data[243 + offset2];
-    const batteryTypes = ['LFP', 'Li-ion', 'LTO'];
-    result.batteryType = batteryTypes[batteryTypeId] || `Unknown (${batteryTypeId})`;
 
     const chargeStatusId = data[248 + offset2];
     const chargeStatuses = ['Bulk', 'Absorption', 'Float'];

@@ -18,6 +18,7 @@ export interface BatteryPackStatus {
 }
 
 export interface CellData {
+  type: 'LFP' | 'Li-ion' | 'LTO';
   cells: CellDetail[];
   minCellVoltage: number;
   maxCellVoltage: number;
@@ -84,7 +85,7 @@ export interface BMSStatus {
 }
 
 export interface JK04Status {
-  cellStatus: CellData;
+  cellStatus: Omit<CellData, 'type'>;
   devFlags: Pick<DeviceFlags, 'isBalancing' | 'balancerStatus'>;
   packStatus: Pick<BatteryPackStatus, 'totalVoltage' | 'balancingCurrent'>;
 }
