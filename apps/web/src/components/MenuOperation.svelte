@@ -1,10 +1,11 @@
 <script lang="ts">
-  import type { CellDetail } from '@manot40/jk-bms';
+  import type { BMSStatus, CellDetail } from '@manot40/jk-bms';
 
   import { useDebounce } from '$lib/hooks/debounce.svelte';
 
   import Progress from '$components/ui/progress/progress.svelte';
-  import Skeleton from './ui/skeleton/skeleton.svelte';
+  import Skeleton from '$components/ui/skeleton/skeleton.svelte';
+  import RecordOperation from '$components/RecordOperation.svelte';
 
   import {
     type LucideIcon,
@@ -17,13 +18,14 @@
     ThermometerIcon,
   } from '@lucide/svelte';
 
-  import * as bms from '$lib/bms.svelte';
-
+  type Props = { data: BMSStatus };
   const numFmt = Intl.NumberFormat('id').format;
 
-  const devFlags = $derived(bms.status.devFlags);
-  const packStats = $derived(bms.status.packStatus);
-  const cellStats = $derived(bms.status.cellStatus);
+  const { data }: Props = $props();
+
+  const devFlags = $derived(data.devFlags);
+  const packStats = $derived(data.packStatus);
+  const cellStats = $derived(data.cellStatus);
   const balanceState = $derived(!devFlags.isBalancing ? 0 : packStats.balancingCurrent > 0 ? 1 : -1);
   const chargeStateDeb = useDebounce(() => devFlags.isCharging, 6e3);
 
@@ -116,9 +118,9 @@
 
 <section id="temperatures" class="border-t p-2">
   <div class="grid grid-cols-3 place-items-center text-sm">
-    {@render Temp(bms.status.temperatures.mosfet, CpuIcon)}
-    {@render Temp(bms.status.temperatures.sensor1, ThermometerIcon, '1')}
-    {@render Temp(bms.status.temperatures.sensor2, ThermometerIcon, '2')}
+    {@render Temp(data.temperatures.mosfet, CpuIcon)}
+    {@render Temp(data.temperatures.sensor1, ThermometerIcon, '1')}
+    {@render Temp(data.temperatures.sensor2, ThermometerIcon, '2')}
   </div>
 </section>
 
@@ -160,6 +162,10 @@
     </div>
   {/each}
 </section>
+
+<div class="border-b">
+  <RecordOperation class="w-full rounded-none" />
+</div>
 
 <style>
   .cell {

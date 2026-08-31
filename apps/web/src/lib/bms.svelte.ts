@@ -1,13 +1,16 @@
-import { BMSManager, type ConnectionState } from '@manot40/jk-bms';
+import { BMSManager, type ConnectionState as ConnState } from '@manot40/jk-bms';
 import { WebBluetoothLE } from '@manot40/jk-bms/ble-web';
 
 import { browser } from '$app/env';
+
+export type ConnectionState = ConnState & { hasConnected: boolean };
 
 let listener: (() => void) | undefined;
 const DEFAULT_CONN: ConnectionState = {
   error: null,
   isConnected: false,
   isConnecting: false,
+  hasConnected: false,
 };
 
 export const ble = new WebBluetoothLE();
@@ -23,6 +26,7 @@ export function cleanup() {
 
 if (browser) {
   listener = manager.addListener(({ bms, state }) => {
+    conn.hasConnected ||= state.isConnected;
     Object.assign(status, bms);
     Object.assign(conn, state);
   });

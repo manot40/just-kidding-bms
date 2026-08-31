@@ -7,7 +7,7 @@
   import MenuOperation from '$components/MenuOperation.svelte';
 
   import { BluetoothIcon } from '@lucide/svelte';
-  import { conn, manager } from '$lib/bms.svelte';
+  import { conn, manager, status } from '$lib/bms.svelte';
 
   const hasBluetooth = browser && typeof navigator.bluetooth != 'undefined';
 
@@ -25,7 +25,7 @@
   });
 </script>
 
-{#if !conn.isConnected}
+{#if !conn.isConnected && !conn.hasConnected}
   <Empty.Root class="min-h-dvh">
     <Empty.Header>
       <Empty.Media variant="icon">
@@ -47,5 +47,5 @@
     </Empty.Content>
   </Empty.Root>
 {:else}
-  <MenuOperation />
+  <MenuOperation data={status} />
 {/if}
