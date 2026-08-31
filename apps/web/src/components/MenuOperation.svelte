@@ -1,7 +1,10 @@
 <script lang="ts">
-  import Progress from '$components/ui/progress/progress.svelte';
+  import type { CellDetail } from '@manot40/jk-bms';
 
   import { useDebounce } from '$lib/hooks/debounce.svelte';
+
+  import Progress from '$components/ui/progress/progress.svelte';
+  import Skeleton from './ui/skeleton/skeleton.svelte';
 
   import {
     type LucideIcon,
@@ -24,6 +27,10 @@
   const balanceState = $derived(!devFlags.isBalancing ? 0 : packStats.balancingCurrent > 0 ? 1 : -1);
   const chargeStateDeb = useDebounce(() => devFlags.isCharging, 6e3);
 
+  const cells = $derived.by<(CellDetail | null)[]>(() => {
+    if (cellStats.cells.length > 0) return cellStats.cells;
+    return Array(24).fill(null);
+  });
   const powerDrawStats = $derived.by(() => {
     const fullCapDrain = -packStats.fullChargeCapacity;
     if (packStats.current <= fullCapDrain * 2) return 'high';
@@ -42,8 +49,9 @@
   });
 
   function getCellColor(i: number) {
-    if (cellStats.maxVoltageCell === i + 1) {
-      let cn = 'bg-primary/20 text-primary';
+    if (cellStats.cells.length === 0) return;
+    else if (cellStats.maxVoltageCell === i + 1) {
+      let cn = 'bg-foreground/20 text-foreground';
       if (balanceState === -1) cn += ' animate-pulse';
       return cn;
     } else if (cellStats.minVoltageCell === i + 1) {
@@ -58,7 +66,7 @@
   function getTempColor(temp: number) {
     let textColor: string | undefined;
     if (temp > 45) textColor = 'text-red-600';
-    else if (temp > 35) textColor = 'text-yellow-600';
+    else if (temp > 36) textColor = 'text-yellow-600';
     else if (temp < 30) textColor = 'text-green-600';
     return textColor;
   }
@@ -91,7 +99,7 @@
   </div>
 {/snippet}
 
-<section id="soc" class="p-2 pb-2.5 select-none">
+<section id="soc" class="p-2 pb-3 select-none">
   <div class="flex justify-between mb-1.5 items-center">
     <div class="flex gap-1.5 items-center text-xs">
       <Battery.Icon class="size-5" />
@@ -128,18 +136,27 @@
 </section>
 
 <section id="cells" class="grid grid-cols-4 select-none">
-  {#each cellStats.cells as cell, i (i)}
+  {#each cells as cell, i (i)}
     <div class={['cell transition-colors duration-300', getCellColor(i)]}>
       <div class="text-xs">#{i + 1}</div>
 
       <div>
-        <span>{cell.voltage.toFixed(3)}</span>
-        <sup class="-ml-1">v</sup>
+        {#if cell}
+          <span>{cell.voltage.toFixed(3)}</span>
+          <sup class="-ml-1">v</sup>
+        {:else}
+          <Skeleton class="h-4 w-16 my-2" />
+        {/if}
       </div>
-      <div class="text-xs">
-        <span>{cell.resistance.toFixed(3)}</span>
-        Ω
-      </div>
+
+      {#if cell}
+        <div class="text-xs">
+          <span>{cell.resistance.toFixed(3)}</span>
+          Ω
+        </div>
+      {:else}
+        <Skeleton class="h-2 w-8" />
+      {/if}
     </div>
   {/each}
 </section>

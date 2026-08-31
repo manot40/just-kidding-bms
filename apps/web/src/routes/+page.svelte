@@ -25,29 +25,27 @@
   });
 </script>
 
-<div class="w-full lg:max-w-lg mx-auto">
-  {#if !conn.isConnected}
-    <Empty.Root class="min-h-dvh">
-      <Empty.Header>
-        <Empty.Media variant="icon">
-          <BluetoothIcon />
-        </Empty.Media>
-        <Empty.Title>Connect BMS</Empty.Title>
-        <Empty.Description>
-          You haven't connected to any device yet. Make sure your browser has <a
-            target="_blank"
-            href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API"
-            rel="noopener noreferrer">
-            Bluetooth
-          </a>
-          supoprted and enabled.
-        </Empty.Description>
-      </Empty.Header>
-      <Empty.Content>
-        <Button class="px-6" disabled={!hasBluetooth} onclick={handleConnect}>Connect</Button>
-      </Empty.Content>
-    </Empty.Root>
-  {:else}
-    <MenuOperation />
-  {/if}
-</div>
+{#if !conn.isConnected}
+  <Empty.Root class="min-h-dvh">
+    <Empty.Header>
+      <Empty.Media variant="icon">
+        <BluetoothIcon />
+      </Empty.Media>
+      <Empty.Title>Connect BMS</Empty.Title>
+      <Empty.Description>
+        You haven't connected to any device yet. Make sure your browser has <a
+          target="_blank"
+          href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API"
+          rel="noopener noreferrer">
+          Bluetooth
+        </a>
+        supoprted and enabled.
+      </Empty.Description>
+    </Empty.Header>
+    <Empty.Content>
+      <Button class="px-6" disabled={!hasBluetooth} onclick={handleConnect}>Connect</Button>
+    </Empty.Content>
+  </Empty.Root>
+{:else}
+  <MenuOperation />
+{/if}
