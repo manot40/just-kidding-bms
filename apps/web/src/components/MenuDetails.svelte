@@ -1,5 +1,5 @@
 <script lang="ts">
-  import * as bms from '$lib/bms.svelte';
+  import * as bms from '$lib/store/bms.svelte';
 
   const devFlags = $derived(bms.status.devFlags);
 </script>

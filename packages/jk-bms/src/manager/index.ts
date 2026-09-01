@@ -48,6 +48,7 @@ export class BMSManager {
   static getInitialStatus(): BMSStatus {
     return {
       cellStatus: {
+        type: 'LFP',
         cells: [],
         minCellVoltage: 0,
         maxCellVoltage: 0,

@@ -7,7 +7,7 @@
   import MenuOperation from '$components/MenuOperation.svelte';
 
   import { BluetoothIcon } from '@lucide/svelte';
-  import { conn, manager, status } from '$lib/bms.svelte';
+  import { conn, manager, status } from '$lib/store/bms.svelte';
 
   const hasBluetooth = browser && typeof navigator.bluetooth != 'undefined';
 

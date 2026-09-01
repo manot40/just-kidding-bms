@@ -27,7 +27,7 @@
   const packStats = $derived(data.packStatus);
   const cellStats = $derived(data.cellStatus);
   const balanceState = $derived(!devFlags.isBalancing ? 0 : packStats.balancingCurrent > 0 ? 1 : -1);
-  const chargeStateDeb = useDebounce(() => devFlags.isCharging, 6e3);
+  // const chargeStateDeb = useDebounce(() => devFlags.isCharging, 6e3);
 
   const cells = $derived.by<(CellDetail | null)[]>(() => {
     if (cellStats.cells.length > 0) return cellStats.cells;
@@ -105,12 +105,12 @@
   <div class="flex justify-between mb-1.5 items-center">
     <div class="flex gap-1.5 items-center text-xs">
       <Battery.Icon class="size-5" />
-      <p class="font-medium">{cellStats.type} {chargeStateDeb.value ? '• Charging' : ''}</p>
+      <p class="font-medium">{cellStats.type} {devFlags.isCharging ? '• Charging' : ''}</p>
     </div>
     <div class="flex items-center text-sm font-medium">
       <p>{packStats.capacityRemaining.toFixed(2)} Ah</p>
       <span>&nbsp;•&nbsp;</span>
-      <p>{packStats.stateOfCharge < 100 ? packStats.stateOfCharge.toFixed(2) : 100}%</p>
+      <p>{packStats.stateOfCharge < 100 ? packStats.stateOfCharge : 100}%</p>
     </div>
   </div>
   <Progress value={soc} color={Battery.color} />
