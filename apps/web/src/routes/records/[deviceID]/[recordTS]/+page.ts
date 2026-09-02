@@ -7,8 +7,8 @@ export const load: PageLoad = async ({ params, fetch }) => {
   const res = await fetch(`/records/${params.deviceID}/${params.recordTS}.json`);
 
   if (res.ok) {
-    const result = await res.json().catch(() => null);
-    if (result) return result as RecordData[];
+    const result: RecordData[] | null = await res.json().catch(() => null);
+    if (result) return { result };
   }
 
   return error(404);
