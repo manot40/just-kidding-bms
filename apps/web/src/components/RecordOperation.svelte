@@ -3,7 +3,7 @@
 
   import { cn } from '$lib/utils';
   import * as bms from '$lib/store/bms.svelte';
-  import { RecordWriter } from '$lib/store/record.writer';
+  import { RecordWriter } from '$lib/recorder/writer';
 
   import Button from '$components/ui/button/button.svelte';
 

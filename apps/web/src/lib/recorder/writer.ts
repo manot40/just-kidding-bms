@@ -1,8 +1,8 @@
 import type { BMSStatus } from '@manot40/jk-bms';
-import type { WorkerRequest } from '$lib/types/opfs.worker';
+import type { WorkerRequest } from './types';
 type PromiseArgs = [resolve: () => void, reject: (reason?: any) => void];
 
-import OPFSWorker from '../workers/record.writer?worker';
+import OPFSWorker from './worker?worker';
 
 export class RecordWriter {
   private ended = false;
@@ -15,9 +15,9 @@ export class RecordWriter {
   private createMessageHandler(...args: PromiseArgs) {
     return (e: MessageEvent) => {
       const message = e.data;
-      if (message.status === 'OK') {
+      if (message.success) {
         args[0]();
-      } else if (message.status === 'ERROR') {
+      } else {
         args[1](new Error(message.error));
       }
     };
