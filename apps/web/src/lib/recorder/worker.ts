@@ -20,15 +20,12 @@ async function initCacheStream(id: string): Promise<void> {
     .pipeThrough(new TextEncoderStream())
     .pipeThrough(new CompressionStream('gzip'));
   const response = new Response(compressionStream, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Encoding': 'gzip',
-    },
+    headers: { 'Content-Type': 'application/octet-stream' },
   });
 
   streamPromise = (async () => {
     const cache = await cachePromise;
-    await cache.put(`/records/${id}/${ts}.json`, response);
+    await cache.put(`/records/${id}/${ts}.bin`, response);
   })();
 }
 

@@ -21,7 +21,7 @@
     const cache = await caches.open('bms-records-cache');
     const keys = (await cache.keys()).toReversed();
     records = keys.map((req) => {
-      const path = new URL(req.url).pathname.replace(/\.json$/, '');
+      const path = new URL(req.url).pathname.replace(/\.bin$/, '');
       const [, device, tsString] = path.split('/').filter(Boolean);
       const recordedAt = new Date(parseInt(tsString) * 1000);
       return { id: path, device, recordedAt };

@@ -64,12 +64,9 @@ self.addEventListener('fetch', (event) => {
         throw new Error('Record cache not found: ' + url.pathname);
       }
 
-      const isGzip = response.headers.get('Content-Encoding') === 'gzip';
-      if (!isGzip) return response;
-
       const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
       return new Response(stream, {
-        headers: { 'Content-Type': response.headers.get('Content-Type')! },
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
