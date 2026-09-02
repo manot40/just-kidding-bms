@@ -14,6 +14,7 @@ declare const self: ServiceWorkerGlobalScope;
 
 const CACHE_PWA = `pwa-cache-${version}`;
 const CACHE_RECORDS = 'bms-records-cache';
+const REGEX_CACHE_RECORD = /^\/records\/\w+\/\w+\.(bin|json)$/;
 
 const ASSETS = [
   ...build, // the app itself
@@ -57,8 +58,7 @@ self.addEventListener('fetch', (event) => {
     }
 
     // BMS records can always be served from the cache
-    const records = await loadRecords(cacheRecords);
-    if (records.includes(url.pathname)) {
+    if (REGEX_CACHE_RECORD.test(url.pathname)) {
       const response = await cacheRecords.match(url.pathname);
       if (!response || !response.body) {
         throw new Error('Record cache not found: ' + url.pathname);
@@ -96,8 +96,3 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith(respond());
 });
-
-async function loadRecords(cache: Cache) {
-  const keys = await cache.keys();
-  return keys.map((key) => new URL(key.url).pathname);
-}

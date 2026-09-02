@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { BMSStatus, CellDetail } from '@manot40/jk-bms';
 
-  import { useDebounce } from '$lib/hooks/debounce.svelte';
+  import { pluralify } from '$lib/utils';
+  // import { useDebounce } from '$lib/hooks/debounce.svelte';
 
   import Progress from '$components/ui/progress/progress.svelte';
   import Skeleton from '$components/ui/skeleton/skeleton.svelte';
@@ -27,7 +28,9 @@
   const packStats = $derived(data.packStatus);
   const cellStats = $derived(data.cellStatus);
   const balanceState = $derived(!devFlags.isBalancing ? 0 : packStats.balancingCurrent > 0 ? 1 : -1);
-  // const chargeStateDeb = useDebounce(() => devFlags.isCharging, 6e3);
+
+  const charging = $derived(packStats.current > 0.5);
+  // const chargingDeb = useDebounce(() => charging, 6e3);
 
   const cells = $derived.by<(CellDetail | null)[]>(() => {
     if (cellStats.cells.length > 0) return cellStats.cells;
@@ -43,7 +46,7 @@
 
   const soc = $derived(packStats.stateOfCharge);
   const Battery = $derived.by(() => {
-    if (devFlags.isCharging) return { Icon: BatteryCharging, color: 'bg-green-600 animate-pulse' };
+    if (charging) return { Icon: BatteryCharging, color: 'bg-green-600 animate-pulse' };
     else if (soc > 80) return { Icon: BatteryFull, color: 'bg-green-600' };
     else if (soc > 40) return { Icon: BatteryMedium, color: undefined };
     else if (soc > 20) return { Icon: BatteryLow, color: 'bg-yellow-600' };
@@ -67,9 +70,9 @@
 
   function getTempColor(temp: number) {
     let textColor: string | undefined;
-    if (temp > 45) textColor = 'text-red-600';
-    else if (temp > 36) textColor = 'text-yellow-600';
-    else if (temp < 30) textColor = 'text-green-600';
+    if (temp >= 45) textColor = 'text-red-600';
+    else if (temp >= 36) textColor = 'text-yellow-600';
+    else if (temp <= 30) textColor = 'text-green-600';
     return textColor;
   }
 </script>
@@ -105,7 +108,9 @@
   <div class="flex justify-between mb-1.5 items-center">
     <div class="flex gap-1.5 items-center text-xs">
       <Battery.Icon class="size-5" />
-      <p class="font-medium">{cellStats.type} {devFlags.isCharging ? '• Charging' : ''}</p>
+      <p class="font-medium">
+        {cellStats.type} • {charging ? 'Charging' : pluralify('Cycle', packStats.chargingCycles)}
+      </p>
     </div>
     <div class="flex items-center text-sm font-medium">
       <p>{packStats.capacityRemaining.toFixed(2)} Ah</p>

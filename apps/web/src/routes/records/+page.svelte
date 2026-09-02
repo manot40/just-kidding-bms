@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { RECORDS_CACHE_KEY } from '$lib/constants';
 
   import Button from '$components/ui/button/button.svelte';
 
@@ -18,7 +19,7 @@
   let records = $state.raw<RecordEntry[]>([]);
 
   onMount(async () => {
-    const cache = await caches.open('bms-records-cache');
+    const cache = await caches.open(RECORDS_CACHE_KEY);
     const keys = (await cache.keys()).toReversed();
     records = keys.map((req) => {
       const path = new URL(req.url).pathname.replace(/\.bin$/, '');

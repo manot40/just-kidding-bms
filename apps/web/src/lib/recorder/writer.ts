@@ -1,8 +1,8 @@
 import type { BMSStatus } from '@manot40/jk-bms';
-import type { WorkerRequest } from './types';
+import type { WorkerRequest } from './writer.types';
 type PromiseArgs = [resolve: () => void, reject: (reason?: any) => void];
 
-import OPFSWorker from './worker?worker';
+import OPFSWorker from './writer.worker?worker';
 
 export class RecordWriter {
   private ended = false;

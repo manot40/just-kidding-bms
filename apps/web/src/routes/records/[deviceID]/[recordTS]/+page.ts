@@ -1,5 +1,5 @@
 import type { PageLoad } from './$types';
-import type { RecordData } from '$lib/recorder/types';
+import type { RecordData } from '$lib/recorder/writer.types';
 
 import { error } from '@sveltejs/kit';
 

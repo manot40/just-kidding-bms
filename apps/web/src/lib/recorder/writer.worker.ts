@@ -1,12 +1,14 @@
 /// <reference lib="webworker" />
 
-import type { RecordData, WorkerRequest, WorkerResponse } from './types';
+import type { RecordData, WorkerRequest, WorkerResponse } from './writer.types';
 type DataStream = WritableStreamDefaultWriter<string> & { written: boolean };
+
+import { RECORDS_CACHE_KEY } from '$lib/constants';
 
 declare const self: DedicatedWorkerGlobalScope;
 
 const ts = (Date.now() / 1000).toFixed(0);
-const cachePromise = caches.open('bms-records-cache');
+const cachePromise = caches.open(RECORDS_CACHE_KEY);
 
 let stream: DataStream | null = null;
 let streamPromise: Promise<void> | null = null;
