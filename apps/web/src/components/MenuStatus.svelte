@@ -154,8 +154,8 @@
     {@render LargeGrid([packStats.current.toFixed(2), '⎓ A'], [powerDrawStats, powerDrawState])}
   </div>
   <div class="grid grid-cols-3 place-items-center border-t border-dashed p-2">
-    {@render SmallGrid(cellStats.deltaCellVoltage.toFixed(3), 'ΔV', { mark: 'V' })}
     {@render SmallGrid(cellStats.averageCellVoltage.toFixed(3), 'x̄V', { mark: 'V' })}
+    {@render SmallGrid(cellStats.deltaCellVoltage.toFixed(3), 'ΔV', { mark: 'V' })}
     {@render SmallGrid(numFmt(power), ZapIcon, { mark: 'W', class: [powerDrawStats, powerDrawState] })}
   </div>
 </section>
@@ -195,9 +195,9 @@
   {/each}
 </section>
 
-<div class="border-b">
+<!-- <div class="border-b">
   <RecordOperation class="w-full rounded-none" />
-</div>
+</div> -->
 
 <style>
   .cell {

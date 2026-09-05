@@ -27,7 +27,7 @@ async function initCacheStream(id: string): Promise<void> {
 
   streamPromise = (async () => {
     const cache = await cachePromise;
-    await cache.put(`/records/${id}/${ts}.bin`, response);
+    await cache.put(`/records/${id}/${ts}.replay`, response);
   })();
 }
 

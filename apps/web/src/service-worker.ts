@@ -14,7 +14,7 @@ declare const self: ServiceWorkerGlobalScope;
 
 const CACHE_PWA = `pwa-cache-${version}`;
 const CACHE_RECORDS = 'bms-records-cache';
-const REGEX_CACHE_RECORD = /^\/records\/\w+\/\w+\.(bin|json)$/;
+const REGEX_CACHE_RECORD = /^\/records\/\w+\/\w+\.(replay|json)$/;
 
 const ASSETS = [
   ...build, // the app itself
@@ -63,6 +63,9 @@ self.addEventListener('fetch', (event) => {
       if (!response || !response.body) {
         throw new Error('Record cache not found: ' + url.pathname);
       }
+
+      const isCompressed = response.headers.get('content-type') === 'application/octet-stream';
+      if (!isCompressed) return response;
 
       const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
       return new Response(stream, {
