@@ -17,9 +17,12 @@
     BatteryMedium,
     CpuIcon,
     ThermometerIcon,
+    EqualApproximatelyIcon,
+    ZapIcon,
   } from '@lucide/svelte';
 
   type Props = { data: BMSStatus };
+  type ClassName = string | Array<string | undefined>;
   const numFmt = Intl.NumberFormat('id').format;
 
   const { data }: Props = $props();
@@ -29,6 +32,7 @@
   const cellStats = $derived(data.cellStatus);
   const balanceState = $derived(!devFlags.isBalancing ? 0 : packStats.balancingCurrent > 0 ? 1 : -1);
 
+  const power = $derived(Math.round(packStats.power < 0 ? packStats.power * -1 : packStats.power));
   const charging = $derived(packStats.current > 0.5);
   // const chargingDeb = useDebounce(() => charging, 6e3);
 
@@ -38,11 +42,11 @@
   });
   const powerDrawStats = $derived.by(() => {
     const fullCapDrain = -packStats.fullChargeCapacity;
-    if (packStats.current <= fullCapDrain * 2) return 'high';
-    else if (packStats.current <= fullCapDrain) return 'medium';
-    else return '';
+    if (packStats.current <= fullCapDrain * 2) return 'high-draw';
+    else if (packStats.current <= fullCapDrain) return 'medium-draw';
+    else return undefined;
   });
-  const powerDrawState = $derived(packStats.power < 0 ? 'drain' : packStats.power > 0 ? 'charge' : '');
+  const powerDrawState = $derived(packStats.power < 0 ? 'drain' : packStats.power > 0 ? 'charge' : undefined);
 
   const soc = $derived(packStats.stateOfCharge);
   const Battery = $derived.by(() => {
@@ -77,26 +81,38 @@
   }
 </script>
 
-{#snippet Block(mainValue: [string, string], secondValue: [string, string], cn?: string | string[])}
-  <div class={['text-center', ...(Array.isArray(cn) ? cn : [cn])]}>
-    <div class="top p-2.5 text-3xl font-semibold border-b border-dashed">
-      <span class="value">{mainValue[0]}</span>
-      <sup class="unit text-lg -ml-1">{mainValue[1]}</sup>
+{#snippet LargeGrid(value: [string, string], cn?: ClassName)}
+  <div
+    class={['large-grid text-center p-2 transition-colors duration-300', ...(Array.isArray(cn) ? cn : [cn])]}>
+    <div class="text-3xl font-semibold">
+      <span class="value">{value[0]}</span>
     </div>
-    <div class="bot p-1">
-      <span class="value font-medium">{secondValue[0]}</span>
-      <span class="unit text-xs -ml-px">{secondValue[1]}</span>
-    </div>
+    <div class="text-xs mt-0.5">{value[1]}</div>
   </div>
 {/snippet}
 
-{#snippet Temp(temp: number | undefined, Icon: LucideIcon, extra?: string)}
+{#snippet SmallGrid(
+  value: number | string | undefined,
+  Icon: LucideIcon | string,
+  extra?: { isTemp?: boolean | string; class?: ClassName; mark?: string }
+)}
   <div class="flex items-center gap-1.5">
-    <div class="text-xs"><Icon class="size-4 inline" />{extra}</div>
-    {#if typeof temp == 'number'}
-      <div class={['font-semibold', extra && 'ml-px']}>
-        <span class={['transition-colors duration-300', getTempColor(temp)]}>{temp.toFixed(1)}</span>
-        <span>°C</span>
+    <div class="text-xs">
+      {#if typeof Icon == 'string'}
+        <span class="text-sm">{Icon}</span>
+      {:else}
+        <Icon class="size-4 inline" />{typeof extra?.isTemp == 'string' ? extra.isTemp : ''}
+      {/if}
+    </div>
+    {#if typeof value != 'undefined'}
+      <div class={['font-semibold', typeof extra?.isTemp == 'string' && 'ml-px', extra?.class]}>
+        {#if extra?.isTemp && typeof value == 'number'}
+          <span class={['transition-colors duration-300', getTempColor(value)]}>{value.toFixed(1)}</span>
+          <span>°C</span>
+        {:else}
+          <span class="value">{value}</span>
+          {#if extra?.mark}<span class="text-xs -ml-px">{extra.mark}</span>{/if}
+        {/if}
       </div>
     {:else}
       <em>N/A</em>
@@ -104,48 +120,59 @@
   </div>
 {/snippet}
 
-<section id="soc" class="p-2 pb-3 select-none">
-  <div class="flex justify-between mb-1.5 items-center">
-    <div class="flex gap-1.5 items-center text-xs">
+<section id="soc" class="px-2 pb-3 select-none text-sm">
+  <div class="flex justify-between mb-2 items-center">
+    <div class="flex gap-1.5 items-center">
       <Battery.Icon class="size-5" />
       <p class="font-medium">
-        {cellStats.type} • {charging ? 'Charging' : pluralify('Cycle', packStats.chargingCycles)}
+        {cellStats.type}
+        {packStats.fullChargeCapacity}Ah • {charging
+          ? 'Charging'
+          : pluralify('Cycle', packStats.chargingCycles)}
       </p>
     </div>
-    <div class="flex items-center text-sm font-medium">
-      <p>{packStats.capacityRemaining.toFixed(2)} Ah</p>
+    <div class="flex items-center font-medium">
+      <p>{packStats.capacityRemaining.toFixed(2)}Ah</p>
       <span>&nbsp;•&nbsp;</span>
-      <p>{packStats.stateOfCharge < 100 ? packStats.stateOfCharge : 100}%</p>
+      <p>{packStats.stateOfCharge}%</p>
     </div>
   </div>
   <Progress value={soc} color={Battery.color} />
 </section>
 
-<section id="temperatures" class="border-t p-2">
+<section id="temperatures" class="border-y p-2">
   <div class="grid grid-cols-3 place-items-center text-sm">
-    {@render Temp(data.temperatures.mosfet, CpuIcon)}
-    {@render Temp(data.temperatures.sensor1, ThermometerIcon, '1')}
-    {@render Temp(data.temperatures.sensor2, ThermometerIcon, '2')}
+    {@render SmallGrid(data.temperatures.mosfet, CpuIcon, { isTemp: true })}
+    {@render SmallGrid(data.temperatures.sensor1, ThermometerIcon, { isTemp: '1' })}
+    {@render SmallGrid(data.temperatures.sensor2, ThermometerIcon, { isTemp: '2' })}
   </div>
 </section>
 
-<section id="power" class="grid grid-cols-2 select-none border-y">
-  {@render Block(
-    [packStats.totalVoltage.toFixed(2), 'V'],
-    [cellStats.deltaCellVoltage.toFixed(3), 'ΔV'],
-    'border-r'
-  )}
-  {@render Block(
-    [packStats.current.toFixed(2), 'A'],
-    [numFmt(Math.round(packStats.power < 0 ? packStats.power * -1 : packStats.power)), 'W'],
-    ['power-draw transition-colors duration-300', powerDrawStats, powerDrawState]
-  )}
+<section id="power" class="select-none border-b">
+  <div class="grid grid-cols-2">
+    {@render LargeGrid([packStats.totalVoltage.toFixed(2), 'ΣV'], 'border-r')}
+    {@render LargeGrid([packStats.current.toFixed(2), '⎓ A'], [powerDrawStats, powerDrawState])}
+  </div>
+  <div class="grid grid-cols-3 place-items-center border-t border-dashed p-2">
+    {@render SmallGrid(cellStats.deltaCellVoltage.toFixed(3), 'ΔV', { mark: 'V' })}
+    {@render SmallGrid(cellStats.averageCellVoltage.toFixed(3), 'x̄V', { mark: 'V' })}
+    {@render SmallGrid(numFmt(power), ZapIcon, { mark: 'W', class: [powerDrawStats, powerDrawState] })}
+  </div>
 </section>
 
 <section id="cells" class="grid grid-cols-4 select-none">
   {#each cells as cell, i (i)}
-    <div class={['cell transition-colors duration-300', getCellColor(i)]}>
-      <div class="text-xs">#{i + 1}</div>
+    {@const balanceProps = getCellColor(i)}
+    <div class={['cell transition-colors duration-300', balanceProps]}>
+      <div class="text-xs">
+        <span>#{i + 1}</span>
+        {#if balanceProps?.includes('animate-pulse')}
+          <span class="max-[375px]:hidden">
+            <EqualApproximatelyIcon class="inline size-3.5 mb-px" /> 1.0
+            <sub>A</sub>
+          </span>
+        {/if}
+      </div>
 
       <div>
         {#if cell}
@@ -184,21 +211,17 @@
     }
   }
 
-  .power-draw {
-    &.high > .top > .value {
-      color: var(--color-red-600);
-    }
-    &.medium > .top > .value {
-      color: var(--color-yellow-600);
-    }
-    &.drain > .bot > .value {
-      color: var(--color-red-600);
-    }
-    &.charge {
-      & > .bot > .value,
-      & > .top > .value {
-        color: var(--color-green-600);
-      }
-    }
+  .high-draw .value {
+    color: var(--color-red-600);
+  }
+  .medium-draw .value {
+    color: var(--color-yellow-600);
+  }
+
+  .drain:not(.large-grid) .value {
+    color: var(--color-red-600);
+  }
+  .charge .value {
+    color: var(--color-green-600);
   }
 </style>

@@ -3,30 +3,53 @@
   import { onDestroy } from 'svelte';
 
   import Button from '$components/ui/button/button.svelte';
-  import * as Empty from '$components/ui/empty/index.js';
-  import MenuOperation from '$components/MenuOperation.svelte';
+  import MenuStatus from '$components/MenuStatus.svelte';
 
-  import { BluetoothIcon } from '@lucide/svelte';
+  import * as Empty from '$components/ui/empty';
+  import * as Tabs from '$components/ui/tabs';
+
+  import { BluetoothIcon, CircleDashedIcon } from '@lucide/svelte';
   import { conn, manager, status } from '$lib/store/bms.svelte';
 
+  let wakeLock: WakeLockSentinel | null = null;
   const hasBluetooth = browser && typeof navigator.bluetooth != 'undefined';
 
-  let wakeLock: WakeLockSentinel | null = null;
+  let activeTab = $state('status');
 
-  function handleConnect() {
-    manager.connect();
+  async function handleConnect() {
+    await manager.connect().then(onHashChange);
     navigator.wakeLock.request('screen').then((wl) => {
       wakeLock = wl;
     });
   }
+
+  const onHashChange = () => {
+    activeTab = window.location.hash.replace(/^#/, '') || 'status';
+  };
 
   onDestroy(() => {
     if (wakeLock) wakeLock.release().then(() => (wakeLock = null));
   });
 </script>
 
+<svelte:window on:hashchange={onHashChange} />
+
+{#snippet ComingSoon()}
+  <Empty.Root>
+    <Empty.Header>
+      <Empty.Media variant="icon">
+        <CircleDashedIcon />
+      </Empty.Media>
+      <Empty.Title>Coming Soon</Empty.Title>
+      <Empty.Description>
+        This feature currently is not available. Try checking occasionaly, it might eventually implemented.
+      </Empty.Description>
+    </Empty.Header>
+  </Empty.Root>
+{/snippet}
+
 {#if !conn.isConnected && !conn.hasConnected}
-  <Empty.Root class="min-h-dvh">
+  <Empty.Root style="min-height: calc(100dvh - 4rem);">
     <Empty.Header>
       <Empty.Media variant="icon">
         <BluetoothIcon />
@@ -47,5 +70,22 @@
     </Empty.Content>
   </Empty.Root>
 {:else}
-  <MenuOperation data={status} />
+  <Tabs.Root class="flex-1" bind:value={activeTab}>
+    <Tabs.List
+      variant="line"
+      class="sticky top-0 w-full border-b z-10 h-10! bg-background/80 backdrop-blur-2xl">
+      <Tabs.Trigger value="status"><a href="#status">Status</a></Tabs.Trigger>
+      <Tabs.Trigger value="device"><a href="#device">Device</a></Tabs.Trigger>
+      <Tabs.Trigger value="logs"><a href="#logs">Logs</a></Tabs.Trigger>
+    </Tabs.List>
+    <Tabs.Content value="status">
+      <MenuStatus data={status} />
+    </Tabs.Content>
+    <Tabs.Content value="device" class="flex flex-col items-center">
+      {@render ComingSoon()}
+    </Tabs.Content>
+    <Tabs.Content value="logs" class="flex flex-col items-center">
+      {@render ComingSoon()}
+    </Tabs.Content>
+  </Tabs.Root>
 {/if}
