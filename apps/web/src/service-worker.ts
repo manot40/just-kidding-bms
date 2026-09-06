@@ -68,9 +68,7 @@ self.addEventListener('fetch', (event) => {
       if (!isCompressed) return response;
 
       const stream = response.body.pipeThrough(new DecompressionStream('gzip'));
-      return new Response(stream, {
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return new Response(stream, { headers: { 'Content-Type': 'text/plaintext' } });
     }
 
     // for everything else, try the network first, but

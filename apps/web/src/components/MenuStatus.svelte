@@ -126,13 +126,13 @@
       <Battery.Icon class="size-5" />
       <p class="font-medium">
         {cellStats.type}
-        {packStats.fullChargeCapacity}Ah • {charging
+        {packStats.fullChargeCapacity} Ah • {charging
           ? 'Charging'
-          : pluralify('Cycle', packStats.chargingCycles)}
+          : pluralify('Cycle', packStats.chargingCycles ?? 0)}
       </p>
     </div>
     <div class="flex items-center font-medium">
-      <p>{packStats.capacityRemaining.toFixed(2)}Ah</p>
+      <p>{packStats.capacityRemaining.toFixed(2)} Ah</p>
       <span>&nbsp;•&nbsp;</span>
       <p>{packStats.stateOfCharge}%</p>
     </div>
@@ -195,9 +195,9 @@
   {/each}
 </section>
 
-<!-- <div class="border-b">
+<div class="border-b">
   <RecordOperation class="w-full rounded-none" />
-</div> -->
+</div>
 
 <style>
   .cell {

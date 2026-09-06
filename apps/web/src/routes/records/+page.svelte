@@ -10,6 +10,7 @@
     recordedAt: Date;
   };
 
+  const PATTERN = /\.json$/;
   const dateFmt = new Intl.DateTimeFormat(undefined, {
     hour12: false,
     dateStyle: 'long',
@@ -21,8 +22,11 @@
   onMount(async () => {
     const cache = await caches.open(RECORDS_CACHE_KEY);
     const keys = (await cache.keys()).toReversed();
-    records = keys.map((req) => {
-      const path = new URL(req.url).pathname.replace(/\.json$/, '');
+    records = keys.flatMap((req) => {
+      const pathName = new URL(req.url).pathname;
+      if (!PATTERN.test(pathName)) return [];
+
+      const path = pathName.replace(PATTERN, '');
       const [, device, tsString] = path.split('/').filter(Boolean);
       const recordedAt = new Date(parseInt(tsString) * 1000);
       return { id: path, device, recordedAt };

@@ -1,13 +1,12 @@
 import type { PageLoad } from './$types';
-import type { RecordData } from '$lib/recorder/writer.types';
 
 import { error } from '@sveltejs/kit';
 
 export const load: PageLoad = async ({ params, fetch }) => {
-  const res = await fetch(`/records/${params.deviceID}/${params.recordTS}.json`);
+  const res = await fetch(`/records/${params.deviceID}/${params.recordTS}.replay`);
 
   if (res.ok) {
-    const result: RecordData[] | null = await res.json().catch(() => null);
+    const result: string | null = await res.text().catch(() => null);
     if (result) return { result };
   }
 

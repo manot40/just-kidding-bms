@@ -21,9 +21,10 @@ export type WorkerRequest<T extends BMSStatus = BMSStatus> =
   | WriteRequestMessage<T>
   | CloseRequestMessage;
 
-export interface WorkerSuccessResponse {
+export interface WorkerSuccessResponse<T = unknown> {
   action: 'WRITE' | 'CLOSE' | 'INIT';
   success: true;
+  data?: T;
 }
 
 export interface WorkerErrorResponse {
@@ -32,7 +33,7 @@ export interface WorkerErrorResponse {
   success: false;
 }
 
-export type WorkerResponse = WorkerSuccessResponse | WorkerErrorResponse;
+export type WorkerResponse<T = unknown> = WorkerSuccessResponse<T> | WorkerErrorResponse;
 
 export type RecordData = {
   ts: number;

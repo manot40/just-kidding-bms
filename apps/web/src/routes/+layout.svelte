@@ -15,7 +15,7 @@
   <link rel="icon" href="/icons/icon-512x512.png" type="image/png" sizes="512x512" />
   <link rel="apple-touch-icon" href="/icons/icon-180x180.png" />
 
-  <meta name="theme-color" content="#ffffff" />
+  <meta name="theme-color" content="#0a0a0a" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-status-bar-style" content="default" />
   <meta name="mobile-web-app-title" content="Smart BMS Monitoring" />

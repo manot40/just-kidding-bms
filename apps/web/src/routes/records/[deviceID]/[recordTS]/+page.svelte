@@ -1,7 +1,15 @@
 <script lang="ts">
+  import { getNthLine } from '$lib/utils';
   import type { PageProps } from './$types';
 
   let { params, data }: PageProps = $props();
+
+  const recordCount = $derived((data.result.match(/\n/g) || []).length + 1);
 </script>
 
-<code>{JSON.stringify(data.result, null, 2)}</code>
+<div>{recordCount}</div>
+<div class="overflow-auto">
+  <code>{getNthLine(data.result, recordCount)}</code>
+  <div class="my-4"></div>
+  <code>{data.result}</code>
+</div>
