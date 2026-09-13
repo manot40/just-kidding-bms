@@ -2,6 +2,7 @@ import type * as Type from './transformer.types';
 import type { RecordData } from './writer.types';
 
 const te = new TextEncoder();
+const DIVISE_BY = 2;
 
 export default class RecordTransformer extends TransformStream<RecordData, Uint8Array<ArrayBuffer>> {
   private written_ = false;
@@ -14,21 +15,23 @@ export default class RecordTransformer extends TransformStream<RecordData, Uint8
   private highestVoltageDeviation: Type.HighestDeviationRecord | undefined;
   private totalCellVoltageSum = 0;
   private totalCellVoltageCount = 0;
+  private totalCurrentSum = 0;
 
   private readonly cellSums: number[] = [];
   private readonly cellCounts: number[] = [];
-  // Grouped discharge current buckets: bucket (5, 10, 15...) -> { sum: number[], count: number[] } per cell index
+  // Grouped discharge current buckets: bucket `DIVISE_BY` -> { sum: number[], count: number[] } per cell index
   private readonly currentBuckets = new Map<number, { sum: number[]; count: number[] }>();
 
   constructor(cache: Promise<Cache> | Cache, key: string) {
     super({
       transform: (data, ctrl) => {
         const prefix = this.written_ ? '\n' : '';
-        this.written_ = true;
+        const payload = te.encode(prefix + JSON.stringify(data));
 
-        this.sampleCount++;
-        if (!this.startedAt) this.startedAt = data.ts;
+        this.startedAt ||= data.ts;
         this.endedAt = data.ts;
+        this.written_ = true;
+        this.sampleCount++;
 
         const packStatus = data.ss?.packStatus;
         const cellStatus = data.ss?.cellStatus;
@@ -39,6 +42,8 @@ export default class RecordTransformer extends TransformStream<RecordData, Uint8
         const totalVoltage = packStatus?.totalVoltage ?? 0;
         const isCharging = Boolean(devFlags?.isCharging || packStatus?.current > 0);
 
+        this.totalCurrentSum += Math.abs(rawCurrent);
+
         let dischargeCurrent = 0;
         if (rawCurrent < 0) {
           dischargeCurrent = Math.abs(rawCurrent);
@@ -47,13 +52,13 @@ export default class RecordTransformer extends TransformStream<RecordData, Uint8
           dischargeCurrent = rawCurrent;
         }
 
-        // Group into 5 divisible value (5, 10, 15, ...so on)
-        const currentBucket = Math.round(dischargeCurrent / 5) * 5;
-        if (currentBucket >= 5 && cells.length > 0) {
-          let bucketData = this.currentBuckets.get(currentBucket);
+        // Group into `DIVISE_BY` divisible value
+        const bucket = Math.round(dischargeCurrent / DIVISE_BY) * DIVISE_BY;
+        if (bucket >= DIVISE_BY && cells.length > 0) {
+          let bucketData = this.currentBuckets.get(bucket);
           if (!bucketData) {
             bucketData = { sum: [], count: [] };
-            this.currentBuckets.set(currentBucket, bucketData);
+            this.currentBuckets.set(bucket, bucketData);
           }
           for (let i = 0; i < cells.length; i++) {
             const v = cells[i]?.voltage ?? 0;
@@ -133,7 +138,7 @@ export default class RecordTransformer extends TransformStream<RecordData, Uint8
           }
         }
 
-        ctrl.enqueue(te.encode(prefix + JSON.stringify(data)));
+        ctrl.enqueue(payload);
       },
 
       flush: async () => {
@@ -200,6 +205,9 @@ export default class RecordTransformer extends TransformStream<RecordData, Uint8
           averageVoltagePerCell.push(count > 0 ? Number((this.cellSums[i] / count).toFixed(4)) : 0);
         }
 
+        const averageCurrent =
+          this.sampleCount > 0 ? Number((this.totalCurrentSum / this.sampleCount).toFixed(4)) : 0;
+
         const stats = {
           cellSeries,
           cellVoltageByCurrent,
@@ -209,6 +217,7 @@ export default class RecordTransformer extends TransformStream<RecordData, Uint8
           lowestVoltage: this.lowestCellVoltage ?? this.lowestPackVoltage,
           lowestCellVoltage: this.lowestCellVoltage,
           lowestPackVoltage: this.lowestPackVoltage,
+          averageCurrent,
           averageCellsVoltage,
           averageVoltagePerCell,
           highestVoltageDeviation: this.highestVoltageDeviation,
@@ -217,7 +226,7 @@ export default class RecordTransformer extends TransformStream<RecordData, Uint8
           endedAt: this.endedAt,
           duration: this.startedAt && this.endedAt ? this.endedAt - this.startedAt : 0,
           sampleCount: this.sampleCount,
-        };
+        } as Type.RecordStatistics;
 
         const data = te.encode(JSON.stringify(stats, null, 2));
         const response = new Response(data, {

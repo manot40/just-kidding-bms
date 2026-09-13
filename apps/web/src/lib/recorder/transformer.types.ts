@@ -64,6 +64,7 @@ export interface RecordStatistics {
   lowestVoltage: LowestVoltageRecord;
   lowestCellVoltage?: LowestVoltageRecord;
   lowestPackVoltage?: LowestVoltageRecord;
+  averageCurrent?: number;
   averageCellsVoltage: number;
   averageVoltagePerCell: number[];
   highestVoltageDeviation?: HighestDeviationRecord;

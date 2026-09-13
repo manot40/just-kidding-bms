@@ -21,6 +21,7 @@
     labelFormatter = defaultFormatter,
     labelClassName,
     formatter,
+    toFixed,
     nameKey,
     color,
     ...restProps
@@ -30,6 +31,7 @@
     indicator?: 'line' | 'dot' | 'dashed';
     nameKey?: string;
     labelKey?: string;
+    toFixed?: number;
     hideIndicator?: boolean;
     labelClassName?: string;
     labelFormatter?: // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,14 +108,14 @@
   <div
     bind:this={ref}
     class={cn(
-      'grid min-w-[9rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl',
+      'grid min-w-36 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl',
       className
     )}
     {...restProps}>
     {#if !nestLabel}
       {@render TooltipLabel()}
     {/if}
-    <div class="grid gap-1.5">
+    <div class={['grid gap-2.5', visibleSeries.length > 12 && 'grid-flow-col grid-rows-12']}>
       {#each visibleSeries as item, i (item.key + i)}
         {@const key = `${nameKey || item.key || item.label || 'value'}`}
         {@const itemConfig = getPayloadConfigFromPayload(chart.config, item, key, chartCtx.tooltip.data)}
@@ -137,7 +139,7 @@
             {:else if !hideIndicator}
               <div
                 style="--color-bg: {indicatorColor}; --color-border: {indicatorColor};"
-                class={cn('shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)', {
+                class={cn('shrink-0 rounded-xs border-(--color-border) bg-(--color-bg)', {
                   'size-2.5': indicator === 'dot',
                   'h-full w-1': indicator === 'line',
                   'w-0 border-[1.5px] border-dashed bg-transparent': indicator === 'dashed',
@@ -147,7 +149,7 @@
             {/if}
             <div
               class={cn(
-                'flex flex-1 shrink-0 justify-between leading-none',
+                'flex flex-1 gap-2 shrink-0 justify-between leading-none',
                 nestLabel ? 'items-end' : 'items-center'
               )}>
               <div class="grid gap-1.5">
@@ -160,7 +162,7 @@
               </div>
               {#if item.value !== undefined}
                 <span class="font-mono font-medium text-foreground tabular-nums">
-                  {item.value.toLocaleString()}
+                  {typeof toFixed == 'number' ? item.value.toFixed(toFixed) : item.value.toLocaleString()}
                 </span>
               {/if}
             </div>
